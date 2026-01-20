@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>月眉古道｜3D 虛擬導覽與實景地圖系統</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap');
+    
+    :root {
+      --bg-dark: #05070a;
+      --card-bg: rgba(13, 20, 38, 0.8);
+      --accent-blue: #3b82f6;
+      --accent-green: #10b981;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      background-image: 
+        radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+      background-attachment: fixed;
+    }
+
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .glass-card:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    .viewer-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #000;
+      border-radius: 1rem;
+      overflow: hidden;
+    }
+
+    @media (max-width: 768px) {
+      .viewer-container {
+        aspect-ratio: 4/3;
+      }
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.05);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.2);
+      border-radius: 10px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb, #059669);
+      transition: transform 0.2s;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.05);
+      transition: all 0.2s;
+    }
+    .btn-outline:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.4);
+    }
+  </style>
+</head>
+<body class="min-h-screen custom-scrollbar">
+
+  <!-- Navigation -->
+  <nav class="sticky top-0 z-50 px-4 py-4">
+    <div class="max-w-6xl mx-auto flex items-center justify-between glass-card px-6 py-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-green-400 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <i class="fa-solid fa-mountain-sun text-white"></i>
+        </div>
+        <div>
+          <h1 class="font-black text-lg tracking-tight">月眉古道 <span class="hidden sm:inline text-muted font-normal ml-1">3D 導覽</span></h1>
+          <p class="text-[10px] text-muted uppercase tracking-widest">Daxi Yuemei Trail 3D</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 sm:gap-4">
+        <a href="#map-section" class="text-sm font-medium hover:text-blue-400 transition-colors hidden sm:block">地圖對照</a>
+        <a href="https://lcc-viewer.xgrids.com/pub/dbndix-taoyuan" target="_blank" class="btn-primary text-white text-xs sm:text-sm px-4 py-2 rounded-full font-bold">
+          <i class="fa-solid fa-up-right-from-square mr-2"></i>全螢幕體驗
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-6xl mx-auto px-4 py-6 space-y-8">
+    
+    <!-- Hero Section -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+      <div class="lg:col-span-2 space-y-6">
+        <div class="glass-card p-8 relative overflow-hidden">
+          <div class="absolute top-0 right-0 p-6 opacity-10">
+            <i class="fa-solid fa-map-location-dot text-8xl"></i>
+          </div>
+          <span class="inline-block px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-bold mb-4 border border-blue-500/20">
+            <span class="status-dot bg-blue-400"></span> 虛擬體驗已就緒
+          </span>
+          <h2 class="text-4xl font-black mb-4">穿越時空的歷史步道</h2>
+          <p class="text-muted leading-relaxed text-lg mb-6">
+            月眉古道位於桃園大溪，曾是月眉地區農民前往大溪老街的重要通路。步道雖短，卻承載著百年的開發歷史，沿途石板路、古老門戶與茂密林蔭，是現代人尋幽訪古的最佳去處。
+          </p>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div class="text-center p-3 rounded-2xl bg-white/5 border border-white/5">
+              <i class="fa-solid fa-clock text-blue-400 mb-2"></i>
+              <div class="text-xs text-muted">步行時間</div>
+              <div class="font-bold">約 30 分鐘</div>
+            </div>
+            <div class="text-center p-3 rounded-2xl bg-white/5 border border-white/5">
+              <i class="fa-solid fa-gauge-high text-green-400 mb-2"></i>
+              <div class="text-xs text-muted">難易程度</div>
+              <div class="font-bold">輕鬆等級</div>
+            </div>
+            <div class="text-center p-3 rounded-2xl bg-white/5 border border-white/5">
+              <i class="fa-solid fa-route text-purple-400 mb-2"></i>
+              <div class="text-xs text-muted">步道全長</div>
+              <div class="font-bold">約 1.2 KM</div>
+            </div>
+            <div class="text-center p-3 rounded-2xl bg-white/5 border border-white/5">
+              <i class="fa-solid fa-leaf text-orange-400 mb-2"></i>
+              <div class="text-xs text-muted">主要景觀</div>
+              <div class="font-bold">林蔭/古道</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Tips -->
+      <div class="lg:col-span-1 space-y-6">
+        <div class="glass-card p-6 border-l-4 border-l-blue-500">
+          <h3 class="font-bold flex items-center gap-2 mb-4">
+            <i class="fa-solid fa-mouse-pointer text-blue-400"></i>
+            3D 互動指南
+          </h3>
+          <ul class="space-y-4 text-sm">
+            <li class="flex items-center gap-3">
+              <kbd class="px-2 py-1 bg-white/10 rounded border border-white/20 text-xs">左鍵</kbd>
+              <span class="text-muted">360度旋轉視角</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <kbd class="px-2 py-1 bg-white/10 rounded border border-white/20 text-xs">滾輪</kbd>
+              <span class="text-muted">縮放距離細看路況</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <kbd class="px-2 py-1 bg-white/10 rounded border border-white/20 text-xs">右鍵</kbd>
+              <span class="text-muted">平移場景位置</span>
+            </li>
+          </ul>
+        </div>
+        
+        <div class="glass-card p-6 bg-green-500/5 border-l-4 border-l-green-500">
+          <h3 class="font-bold flex items-center gap-2 mb-2">
+            <i class="fa-solid fa-cloud-sun text-green-400"></i>
+            今日健行建議
+          </h3>
+          <p class="text-xs text-muted leading-relaxed">
+            步道多為石板與階梯，雨後易濕滑，建議穿著防滑運動鞋。大溪老街周邊停車位較少，建議可停於月眉停車場後步行進入。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main 3D Viewer Section -->
+    <section id="viewer-section" class="space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <h3 class="text-xl font-black">LCC 3D 虛擬實境導覽</h3>
+          <span class="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full border border-green-500/30">高清建模</span>
+        </div>
+        <button onclick="document.getElementById('lccFrame').src += ''" class="text-xs text-muted hover:text-white transition-colors">
+          <i class="fa-solid fa-rotate-right mr-1"></i>重新整理
+        </button>
+      </div>
+
+      <div class="glass-card overflow-hidden">
+        <div class="viewer-container">
+          <iframe
+            id="lccFrame"
+            src="https://lcc-viewer.xgrids.com/pub/dbndix-taoyuan"
+            allow="fullscreen; xr-spatial-tracking"
+            loading="lazy">
+          </iframe>
+          
+          <!-- Loading / Fallback Overlay -->
+          <div id="fallback" class="absolute inset-0 z-10 flex items-center justify-center bg-slate-900/95 p-6 text-center hidden">
+            <div class="max-w-md space-y-4">
+              <div class="text-4xl text-blue-500 mb-4">
+                <i class="fa-solid fa-circle-exclamation animate-bounce"></i>
+              </div>
+              <h4 class="text-xl font-bold">3D 模型載入中或被阻擋</h4>
+              <p class="text-muted text-sm">
+                若超過 10 秒未顯示，可能是因為瀏覽器安全性設定限制了內嵌框架。請直接使用新分頁開啟以獲得最佳體驗。
+              </p>
+              <a href="https://lcc-viewer.xgrids.com/pub/dbndix-taoyuan" target="_blank" class="btn-primary inline-block px-6 py-3 rounded-full font-bold text-white shadow-xl">
+                在新分頁開啟 3D
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Map and History Section -->
+    <section id="map-section" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- 2D Google Maps -->
+      <div class="space-y-4">
+        <h3 class="text-xl font-black flex items-center gap-2">
+          <i class="fa-solid fa-map-marked-alt text-blue-400"></i>
+          實境地圖參考
+        </h3>
+        <div class="glass-card overflow-hidden">
+          <div class="aspect-video lg:aspect-square max-h-[450px]">
+            <!-- Updated to point specifically to Yuemei Trail coordinates -->
+            <iframe 
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1807.838497645152!2d121.2886827!3d24.8857941!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x34681823a9305fe7%3A0xa0bfde2fcd5c531b!2z5pyI55yJ5Y-k6YGT!5e0!3m2!1szh-TW!2stw!4v1715843456789!5m2!1szh-TW!2stw" 
+              style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+          </div>
+          <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white/5">
+            <a href="https://www.google.com/maps/place/%E6%9C%88%E7%9C%89%E5%8F%A4%E9%81%93/@24.8857941,121.2886827,3a,75y,90t/data=!3m8!1e2!3m6!1sCIHM0ogKEICAgIDR5JzvXA!2e10!3e12!6shttps:%2F%2Flh3.googleusercontent.com%2Fgps-cs-s%2FAG0ilSyrFY3L8KO4ufzotX4hz0svJ0K0nHkugDF8pT7Kc1B4CeHRfOAt7wla5bN855JakqoMWtZeUqo-w01nEPGuUxYspkurXDb-gpO5zIawd4GHpOh1byZi97naPH2R5hULMtIrw4jX%3Dw203-h152-k-no!7i3968!8i2976!4m7!3m6!1s0x34681823a9305fe7:0xa0bfde2fcd5c531b!8m2!3d24.8857941!4d121.2886827!10e5!16s%2Fg%2F11gf07zw9r?authuser=0" target="_blank" class="btn-outline text-center py-2 rounded-xl text-sm font-bold text-blue-400">
+              <i class="fa-solid fa-street-view mr-2"></i>查看 Google 實景圖
+            </a>
+            <a href="https://www.google.com/maps/place/%E6%9C%88%E7%9C%89%E5%8F%A4%E9%81%93/@24.885813,121.2886101,71m/data=!3m1!1e3!4m6!3m5!1s0x34681823a9305fe7:0xa0bfde2fcd5c531b!8m2!3d24.8857941!4d121.2886827!16s%2Fg%2F11gf07zw9r?authuser=0" target="_blank" class="btn-outline text-center py-2 rounded-xl text-sm font-bold text-green-400">
+              <i class="fa-solid fa-satellite mr-2"></i>查看航照衛星圖
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Historical Info & Route -->
+      <div class="space-y-4">
+        <h3 class="text-xl font-black flex items-center gap-2">
+          <i class="fa-solid fa-monument text-green-400"></i>
+          必訪亮點
+        </h3>
+        <div class="grid grid-cols-1 gap-4">
+          <div class="glass-card p-5 flex gap-4 hover:bg-white/5 transition-colors cursor-default">
+            <div class="w-12 h-12 rounded-full bg-blue-500/10 flex-shrink-0 flex items-center justify-center font-bold text-blue-400">01</div>
+            <div>
+              <h4 class="font-bold mb-1">月眉通路門樓</h4>
+              <p class="text-sm text-muted">古道的入口地標，保存完好的洗石子建築，見證了早年商業往來的榮景。</p>
+            </div>
+          </div>
+          <div class="glass-card p-5 flex gap-4 hover:bg-white/5 transition-colors cursor-default">
+            <div class="w-12 h-12 rounded-full bg-green-500/10 flex-shrink-0 flex items-center justify-center font-bold text-green-400">02</div>
+            <div>
+              <h4 class="font-bold mb-1">百年古井</h4>
+              <p class="text-sm text-muted">位於步道中段，提供當時居民生活用水，至今仍散發著淳樸的古意。</p>
+            </div>
+          </div>
+          <div class="glass-card p-5 flex gap-4 hover:bg-white/5 transition-colors cursor-default">
+            <div class="w-12 h-12 rounded-full bg-purple-500/10 flex-shrink-0 flex items-center justify-center font-bold text-purple-400">03</div>
+            <div>
+              <h4 class="font-bold mb-1">石頭老路</h4>
+              <p class="text-sm text-muted">由大顆卵石鋪設而成的蜿蜒小徑，兩旁被翠綠植被環繞，如同時光隧道。</p>
+            </div>
+          </div>
+          <div class="p-6 bg-gradient-to-br from-blue-600/20 to-green-600/20 rounded-3xl border border-white/10 mt-2">
+            <h4 class="font-bold mb-2 flex items-center gap-2">
+              <i class="fa-solid fa-circle-info"></i> 導覽員小筆記
+            </h4>
+            <p class="text-sm text-muted italic">
+              「可以先在手機開啟下方地圖，實地健行時若迷失方向，對照 3D 模型中的地形起伏與建築標誌物（如門樓）非常有效。」
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/5 mt-12 bg-black/40 py-10 px-4">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+      <div class="text-center md:text-left">
+        <p class="font-bold text-lg mb-1">月眉古道 3D 智慧導覽</p>
+        <p class="text-xs text-muted">© 2024 大溪觀光資訊參考 ｜ 3D 引擎由 LCC Viewer 提供</p>
+      </div>
+      <div class="flex gap-6">
+        <a href="#" class="text-muted hover:text-white transition-colors text-xl"><i class="fa-brands fa-facebook"></i></a>
+        <a href="#" class="text-muted hover:text-white transition-colors text-xl"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#" class="text-muted hover:text-white transition-colors text-xl"><i class="fa-brands fa-line"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Iframe 載入狀態偵測
+    const frame = document.getElementById('lccFrame');
+    const fallback = document.getElementById('fallback');
+
+    // 設定 8 秒超時，若沒 load 就顯示備援方案 (考慮 3D 模型較大)
+    const loadingTimeout = setTimeout(() => {
+      fallback.classList.remove('hidden');
+    }, 8000);
+
+    frame.addEventListener('load', () => {
+      clearTimeout(loadingTimeout);
+      fallback.classList.add('hidden');
+      console.log('LCC Viewer Loaded Successfully');
+    });
+
+    // 點擊平滑捲動
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+          behavior: 'smooth'
+        });
+      });
+    });
+  </script>
+</body>
+</html>
